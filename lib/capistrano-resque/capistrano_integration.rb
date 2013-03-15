@@ -32,10 +32,11 @@ module CapistranoResque
            ;fi"
         end
 
-        def start_command(queue, pid)
+        def start_command(queue, pid, log)
           "cd #{current_path} && RAILS_ENV=#{rails_env} QUEUE=\"#{queue}\" \
-           PIDFILE=#{pid} BACKGROUND=yes VERBOSE=1 INTERVAL=#{interval} \
-           #{fetch(:bundle_cmd, "bundle")} exec rake resque:work"
+           PIDFILE=#{pid} BACKGROUND=yes INTERVAL=#{interval} \
+           #{fetch(:bundle_cmd, "bundle")} exec rake resque:work \
+           >> #{log}"
         end
 
         def stop_command
@@ -46,10 +47,11 @@ module CapistranoResque
            ;fi"
         end
 
-        def start_scheduler(pid)
+        def start_scheduler(pid,log)
           "cd #{current_path} && RAILS_ENV=#{rails_env} \
-           PIDFILE=#{pid} BACKGROUND=yes VERBOSE=1 \
-           #{fetch(:bundle_cmd, "bundle")} exec rake resque:scheduler"
+           PIDFILE=#{pid} BACKGROUND=yes \
+           #{fetch(:bundle_cmd, "bundle")} exec rake resque:scheduler \
+           >> #{log}"
         end
 
         def stop_scheduler(pid)
@@ -73,7 +75,8 @@ module CapistranoResque
                 threads = []
                 number_of_workers.times do
                   pid = "./tmp/pids/resque_work_#{worker_id}.pid"
-                  threads << Thread.new(pid) { |pid| run(start_command(queue, pid), :roles => role) }
+                  log = "./log/resque_work_#{queue.gsub("*","ALL")}.log"
+                  threads << Thread.new(pid) { |pid| run(start_command(queue, pid, log), :roles => role) }
                   worker_id += 1
                 end
                 threads.each(&:join)
@@ -102,7 +105,8 @@ module CapistranoResque
             desc "Starts resque scheduler with default configs"
             task :start, :roles => :resque_scheduler do
               pid = "#{current_path}/tmp/pids/scheduler.pid"
-              run(start_scheduler(pid))
+              pid = "#{current_path}/log/resque_scheduler.log"
+              run(start_scheduler(pid,log))
             end
 
             desc "Stops resque scheduler"
