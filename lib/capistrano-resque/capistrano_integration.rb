@@ -72,8 +72,8 @@ module CapistranoResque
                 logger.info "Starting #{number_of_workers} worker(s) with QUEUE: #{queue}"
                 threads = []
                 number_of_workers.times do
-                  pid = "./tmp/pids/resque_work_#{worker_id}.pid"
-                  log = "./log/resque_work_#{queue.gsub("*","ALL")}.log"
+                  pid = "#{current_path}/tmp/pids/resque_work_#{worker_id}.pid"
+                  log = "#{current_path}/log/resque_work_#{queue.gsub("*","ALL")}.log"
                   threads << Thread.new(pid,log) { |pid,log| run(start_command(queue, pid, log), :roles => role) }
                   worker_id += 1
                 end
