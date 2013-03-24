@@ -103,7 +103,7 @@ module CapistranoResque
             desc "Starts resque scheduler with default configs"
             task :start, :roles => :resque_scheduler do
               pid = "#{current_path}/tmp/pids/scheduler.pid"
-              pid = "#{current_path}/log/resque_scheduler.log"
+              log = "#{current_path}/log/resque_scheduler.log"
               run(start_scheduler(pid,log))
             end
 
